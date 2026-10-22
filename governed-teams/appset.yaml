@@ -19,7 +19,7 @@ spec:
   goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: https://github.com/akuity/sedemo-monorepo
+        repoURL: https://github.com/Tchaikvsky/sedemo-monorepo
         revision: main
         directories:
         - path: governed/*
@@ -33,7 +33,7 @@ spec:
       project: templated-apps
       sources:
       # The tenant's own values file, in the team-managed monorepo folder.
-      - repoURL: https://github.com/akuity/sedemo-monorepo.git
+      - repoURL: https://github.com/Tchaikvsky/sedemo-monorepo.git
         targetRevision: main
         ref: appValues
       # Platform-owned chart that creates the tenant's Argo CD and Kargo objects.
@@ -45,7 +45,7 @@ spec:
           - '$appValues/governed/{{.path.basename}}/platform/app-values.yaml'
           # valuesObject wins over valueFiles, so tenants can't override these.
           valuesObject:
-            repoUrl: https://github.com/akuity/sedemo-monorepo.git
+            repoUrl: https://github.com/Tchaikvsky/sedemo-monorepo.git
             platform:
               repoUrl: https://github.com/Tchaikvsky/sedemo-platform
               branch: main              # <- your branch, when testing
