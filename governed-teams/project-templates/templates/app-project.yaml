@@ -12,9 +12,9 @@ spec:
   - '*'
   destinations: 
   - namespace: '{{ .Values.application.name }}-*'
-    name: 'sedemo-primary'
+    name: 'k3d-staging'
   - namespace: 'kargo-sync-jobs'
-    name: 'sedemo-primary'
+    name: 'k3d-staging'
   - namespace: '{{ .Values.application.name }}'
     name: 'kargo'
   - namespace: ''
