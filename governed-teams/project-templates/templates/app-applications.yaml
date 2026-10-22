@@ -25,7 +25,7 @@ spec:
     targetRevision: rendered/{{ $.Values.application.name }}/{{$key}}
     path: .
   destination:
-    name: sedemo-primary
+    name: k3d-staging
     namespace: {{ $.Values.application.name }}-{{$key}}
   syncPolicy:
     automated:
@@ -71,7 +71,7 @@ spec:
     targetRevision: rendered/{{ $.Values.application.name }}/{{ $name }}
     path: .
   destination:
-    name: sedemo-primary
+    name: k3d-staging
     namespace: {{ $.Values.application.name }}-{{ $name }}
   syncPolicy:
     automated:
