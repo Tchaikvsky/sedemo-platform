@@ -1,0 +1,68 @@
+{{- /*
+Break-glass role: the people who may authorize an emergency prod release.
+The group comes from platform-controls.yaml (groups.breakGlass). They can start
+a prod promotion; the prod-controls task then asks someone in the same group
+to authorize the emergency path.
+*/ -}}
+{{- $c := .Files.Get "platform-controls.yaml" | fromYaml -}}
+{{- if $c.breakGlass.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: break-glass
+  namespace: {{ .Values.application.name }}
+  annotations:
+    kargo.akuity.io/description: Emergency prod releases (break glass). Every use is audited and recorded for review.
+    rbac.kargo.akuity.io/claims: '{"groups":["{{ $c.groups.breakGlass }}"]}'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: break-glass
+  namespace: {{ .Values.application.name }}
+rules:
+- apiGroups:
+  - kargo.akuity.io
+  resources:
+  - promotions
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - kargo.akuity.io
+  resources:
+  - stages
+  verbs:
+  - promote
+  resourceNames:
+  - prod
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: break-glass
+  namespace: {{ .Values.application.name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: break-glass
+subjects:
+- kind: ServiceAccount
+  name: break-glass
+  namespace: {{ .Values.application.name }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: break-glass-viewer
+  namespace: {{ .Values.application.name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kargo-viewer
+subjects:
+- kind: ServiceAccount
+  name: break-glass
+  namespace: {{ .Values.application.name }}
+{{- end }}

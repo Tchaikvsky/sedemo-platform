@@ -1,0 +1,92 @@
+{{- /*
+One Argo CD Application per environment (dev, staging, prod), plus one per
+tenant stage with deploy: true. Each syncs the branch Kargo renders into, and
+labels its namespace with the tier so cluster policies (../../cluster-policies)
+can tell prod namespaces apart. Tenants that deploy with GitHub Actions get
+none of these: their workflow deploys.
+*/}}
+{{- if ne (.Values.deploy.method | default "argocd") "github-actions" }}
+{{ range $key, $val := .Values.environments }}
+{{ if or ( $.Values.environments.staging) (ne $key "staging") }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: '{{$.Values.application.name}}-{{$key}}'
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    kargo.akuity.io/authorized-stage: '{{$.Values.application.name}}:{{$key}}'
+spec:
+  project: '{{$.Values.project.name}}'
+  source:
+  #pull custom values from team managed monorepo folder (rendered by Kargo)
+    repoURL: '{{$.Values.repoUrl}}'
+    targetRevision: rendered/{{ $.Values.application.name }}/{{$key}}
+    path: .
+  destination:
+    name: sedemo-primary
+    namespace: {{ $.Values.application.name }}-{{$key}}
+  syncPolicy:
+    automated:
+      prune: true
+      enabled: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        tier: {{ $key }}
+        governed.akuity.io/tenant: {{ $.Values.application.name }}
+    retry:
+      limit: 2
+---
+{{ end }}
+{{ end }}
+{{- /*
+Tenant environments: one Application per pipeline.extraStages entry with
+deploy: true. The name check mirrors kargo-chart's guardrails, so a stage the
+guardrails would reject never gets an Application.
+*/}}
+{{- range $st := .Values.pipeline.extraStages }}
+{{- if kindIs "map" $st }}
+{{- $name := get $st "name" | toString }}
+{{- if and (get $st "deploy") (regexMatch "^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$" $name) (not (has $name (list "dev" "staging" "prod"))) (not (contains "prod" $name)) }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: '{{ $.Values.application.name }}-{{ $name }}'
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    kargo.akuity.io/authorized-stage: '{{ $.Values.application.name }}:{{ $name }}'
+  labels:
+    tier: tenant
+spec:
+  project: '{{ $.Values.project.name }}'
+  source:
+    repoURL: '{{ $.Values.repoUrl }}'
+    targetRevision: rendered/{{ $.Values.application.name }}/{{ $name }}
+    path: .
+  destination:
+    name: sedemo-primary
+    namespace: {{ $.Values.application.name }}-{{ $name }}
+  syncPolicy:
+    automated:
+      prune: true
+      enabled: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        tier: tenant
+        governed.akuity.io/tenant: {{ $.Values.application.name }}
+    retry:
+      limit: 2
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

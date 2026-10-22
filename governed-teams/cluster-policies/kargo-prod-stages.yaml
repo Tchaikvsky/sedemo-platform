@@ -1,0 +1,59 @@
+# Stretch (gauntlet 4h): guard the Kargo control plane itself.
+#
+# Only for a self-hosted Kargo control plane where Kyverno runs next to Kargo.
+# Akuity-hosted Kargo doesn't run customer admission policies on its control
+# plane; there, the guardrails in kargo-chart/templates/_governed.tpl and
+# tenant RBAC do this job.
+#
+# Any Stage named prod (or labeled tier: prod) must be labeled tier: prod and
+# must run the prod-controls PromotionTask. So nobody can create a prod Stage
+# without the controls, even with kubectl access to Kargo.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: governed-kargo-prod-stages
+  annotations:
+    policies.kyverno.io/title: Prod Stages run prod-controls
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: prod-stage-has-controls
+    match:
+      any:
+      # Only governed tenants' projects (gov-*), so other demos' prod Stages
+      # aren't affected. CREATE and UPDATE only: deletes must always work.
+      - resources:
+          kinds:
+          - kargo.akuity.io/v1alpha1/Stage
+          names:
+          - prod
+          namespaces:
+          - gov-*
+          operations:
+          - CREATE
+          - UPDATE
+      - resources:
+          kinds:
+          - kargo.akuity.io/v1alpha1/Stage
+          selector:
+            matchLabels:
+              tier: prod
+          namespaces:
+          - gov-*
+          operations:
+          - CREATE
+          - UPDATE
+    validate:
+      message: >-
+        A prod Stage must be labeled tier: prod and run the platform's
+        prod-controls task.
+      deny:
+        conditions:
+          any:
+          - key: "{{ request.object.metadata.labels.tier || '' }}"
+            operator: NotEquals
+            value: prod
+          - key: prod-controls
+            operator: AnyNotIn
+            value: "{{ request.object.spec.promotionTemplate.spec.steps[].task.name || `[]` }}"

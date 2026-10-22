@@ -1,0 +1,79 @@
+# Backstop: only Argo CD writes to governed prod namespaces.
+#
+# Kargo's prod-controls run before Kargo hands a release to Argo CD. This
+# policy makes sure nobody skips that by writing to prod directly. Applies to
+# governed tenants' prod namespaces: named gov-*-prod (every governed tenant,
+# including GitHub Actions tenants), or labeled tier: prod (set by
+# governed-teams/project-templates).
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: governed-prod-only-argocd
+  annotations:
+    policies.kyverno.io/title: Only Argo CD writes to prod
+    policies.kyverno.io/description: >-
+      Workloads in namespaces labeled tier=prod can only be created or changed
+      by Argo CD, which only syncs what Kargo released through prod-controls.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+  - name: only-argocd-writes-prod-workloads
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          - Deployment
+          - StatefulSet
+          - DaemonSet
+          - ReplicaSet
+          - Job
+          - CronJob
+          - argoproj.io/v1alpha1/Rollout
+          namespaces:
+          - gov-*-prod
+          operations:
+          - CREATE
+          - UPDATE
+      - resources:
+          kinds:
+          - Pod
+          - Deployment
+          - StatefulSet
+          - DaemonSet
+          - ReplicaSet
+          - Job
+          - CronJob
+          - argoproj.io/v1alpha1/Rollout
+          namespaceSelector:
+            matchLabels:
+              tier: prod
+          operations:
+          - CREATE
+          - UPDATE
+    exclude:
+      any:
+      # Argo CD's application controller (Akuity agent).
+      - subjects:
+        - kind: ServiceAccount
+          name: argocd-application-controller
+          namespace: akuity
+      # Kubernetes controllers that create Pods and ReplicaSets on Argo CD's behalf.
+      - subjects:
+        - kind: Group
+          name: system:serviceaccounts:kube-system
+      # Argo Rollouts controller (creates ReplicaSets for Rollouts).
+      - subjects:
+        - kind: ServiceAccount
+          name: argo-rollouts
+          namespace: argo-rollouts
+      # Nodes (status updates on Pods).
+      - subjects:
+        - kind: Group
+          name: system:nodes
+    validate:
+      message: >-
+        Prod namespaces only accept changes from Argo CD. Release through Kargo
+        so the platform's prod controls run, or use break glass.
+      deny: {}
