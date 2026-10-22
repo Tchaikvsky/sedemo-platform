@@ -37,7 +37,7 @@ spec:
         targetRevision: main
         ref: appValues
       # Platform-owned chart that creates the tenant's Argo CD and Kargo objects.
-      - repoURL: https://github.com/akuity/sedemo-platform
+      - repoURL: https://github.com/Tchaikvsky/sedemo-platform
         targetRevision: main            # <- your branch, when testing
         path: governed-teams/project-templates/
         helm:
@@ -47,7 +47,7 @@ spec:
           valuesObject:
             repoUrl: https://github.com/akuity/sedemo-monorepo.git
             platform:
-              repoUrl: https://github.com/akuity/sedemo-platform
+              repoUrl: https://github.com/Tchaikvsky/sedemo-platform
               branch: main              # <- your branch, when testing
               dir: governed-teams
             project:
