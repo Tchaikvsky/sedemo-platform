@@ -1,4 +1,4 @@
-# REJECTED (step-allowlist): a staging step that pushes straight to the prod branch.
+# REJECTED (step-allowlist): a staging step that pushes straight to the prod branch in an attempt to bypass guardrails.
 image:
   repository: ghcr.io/akuity/sedemo-monorepo-rollouts-app
 ingress:

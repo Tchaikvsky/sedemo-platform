@@ -1,11 +1,10 @@
 # governed-team-projects
 #
-# Same idea as templated-teams/appset.yaml, but for governed tenants:
-#   - watches sedemo-monorepo/governed/* (not templated/*), so it never picks up
-#     a templated team, and templated-teams never picks up a governed one
+# Copied and modified from the templated-teams/appset.yaml file, but for governed tenants:
+#   - watches sedemo-monorepo/governed/* (not templated/*)
 #   - prefixes every generated name with "gov-" / "governed-", so Argo CD apps,
-#     AppProjects, Kargo Projects and namespaces can't collide with existing demos
-#   - renders the charts in governed-teams/, which lock the prod pipeline
+#     AppProjects, Kargo Projects and namespaces can't collide with existing demos like the ones stored in templated-teams
+#   - renders the charts in governed-teams/, which *lock* the prod pipeline
 #
 # To test from a branch of sedemo-platform, change BOTH "main" values marked
 # below to your branch name.

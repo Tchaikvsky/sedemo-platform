@@ -1,5 +1,5 @@
 # Tenant: checkout
-# Same prod as every other tenant, but its own pre-prod pipeline:
+# Has its own pre-prod pipeline that the end user created:
 #
 #   dev ──► qa ──► staging ──► prod        (prod: platform-owned, identical for everyone)
 #                     └──► perf
@@ -10,7 +10,7 @@
 #   staging  + a second image scan with Grype (informational)
 #   perf     a test stage after staging that smoke-tests the staging app
 #
-# None of this needs the platform team: it's all in this file.
+# All performed by end users without any intervention from the platform team.
 
 image:
   repository: ghcr.io/akuity/sedemo-monorepo-rollouts-app
