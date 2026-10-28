@@ -61,6 +61,7 @@ approvedRegistries:
 # Repos whose GitHub Actions workflows may deploy a tenant (deploy.method: github-actions).
 approvedDeployRepos:
 - https://github.com/akuity/
+- https://github.com/Tchaikvsky/
 # Steps tenants may add below prod. Nothing here writes to Git or Argo CD or
 # triggers a deployment workflow.
 allowedTenantSteps:
