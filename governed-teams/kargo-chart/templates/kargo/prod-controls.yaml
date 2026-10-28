@@ -159,7 +159,7 @@ spec:
           {{- else }}
           prod-approved-by: {{ `${{ task.outputs['change-approval'].responses[0].user }}` }}
           {{- end }}
-          {{- if $c.checks.ciEvidence }}
+          {{- if $c.checks.ciEvidence.enabled }}
           prod-ci-check-runs: {{ `${{ quote(task.outputs['ci-evidence'].checkRuns) }}` }}
           {{- end }}
 
