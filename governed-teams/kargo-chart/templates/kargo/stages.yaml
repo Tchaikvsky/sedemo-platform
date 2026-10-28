@@ -407,6 +407,9 @@ spec:
         config:
           repoURL: {{ .Values.repoUrl }}
           prNumber: {{`${{ outputs['open-pr'].pr.id }}`}}
+          # GitHub needs a few seconds to decide a new PR is mergeable; wait
+          # instead of failing straight away.
+          wait: true
       - uses: argocd-update
         config:
           apps:
