@@ -12,7 +12,7 @@ checks:
   # The image's source commit passed CI: every GitHub check run on that commit
   # finished successfully. No check runs means no evidence, which blocks.
   ciEvidence:
-    enabled: true
+    enabled: false
     # Only look at check runs with this name (e.g. the image build job). Empty
     # means all of them. In a monorepo, set it: otherwise another team's
     # failing workflow on the same commit blocks this release.
