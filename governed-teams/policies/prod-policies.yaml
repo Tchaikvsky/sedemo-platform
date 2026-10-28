@@ -1,9 +1,5 @@
-# Prod policies, checked by the prod-controls task (kargo-chart/templates/kargo/prod-controls.yaml)
-# against the rendered prod manifests, before anything is written to the prod
-# branch. Every policy here is Enforce: one violation blocks the release.
-#
-# The purpose-label rule also runs in staging (require-labels.yaml) in warn
-# mode, so teams see it there first and it only blocks at prod.
+# Prod policies, run by prod-controls on the rendered prod manifests. One violation blocks the release.
+# The purpose-label rule also runs in staging (require-labels.yaml), where it only warns.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:

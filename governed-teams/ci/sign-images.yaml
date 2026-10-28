@@ -1,19 +1,7 @@
-# Add to the image build workflow in akuity/sedemo-monorepo to sign images
-# with cosign keyless (GitHub OIDC, no keys to manage).
-#
-# What it gives the demo:
-#   - prod-controls' signature check (checks.signature.enabled in
-#     kargo-chart/platform-controls.yaml) can pass
-#   - the Kyverno backstop (cluster-policies/prod-verify-images.yaml) can be
-#     switched to Enforce
-#
-# For scene 3's "unsigned image" Freight: push one tag without running this
-# job (or from a branch where it's skipped). prod-controls blocks it at the
-# signature check.
-#
-# Merge these pieces into the existing build job, after the image is pushed.
-# The job needs the image digest; docker/build-push-action exposes it as
-# steps.<id>.outputs.digest.
+# Signs images with cosign keyless. Merge into the monorepo's image build job, after the push
+# (it needs the digest: steps.<id>.outputs.digest).
+# Turns on the prod signature check and lets cluster-policies/prod-verify-images.yaml enforce.
+# For scene 3's unsigned image, push one tag without this step.
 
 permissions:
   contents: read

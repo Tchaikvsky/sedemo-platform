@@ -1,16 +1,9 @@
-# Tenant: checkout
-# Has its own pre-prod pipeline that the end user created:
+# Tenant: checkout. Its own pipeline before prod, set up by the team without the platform team:
 #
-#   dev ──► qa ──► staging ──► prod        (prod: platform-owned, identical for everyone)
+#   dev ──► qa ──► staging ──► prod     (prod is the platform's, same for everyone)
 #                     └──► perf
 #
-#   dev      + conftest check on the rendered manifests (informational)
-#   qa       its own environment (qa.checkout-gov.akpdemoapps.link), auto-promoted
-#            from dev, smoke-tested after each deploy. Staging waits for it.
-#   staging  + a second image scan with Grype (informational)
-#   perf     a test stage after staging that smoke-tests the staging app
-#
-# All performed by end users without any intervention from the platform team.
+# qa: its own environment, smoke-tested. perf: smoke-tests staging. Extra scans in dev and staging.
 
 image:
   repository: ghcr.io/akuity/sedemo-monorepo-rollouts-app

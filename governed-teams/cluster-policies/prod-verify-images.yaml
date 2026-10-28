@@ -1,12 +1,6 @@
-# Backstop: prod images must be signed by CI.
-#
-# Mirrors the prod-controls signature check at admission time, so an image
-# that never went through Kargo still can't run in prod unsigned. CBA already
-# enforces image signing with Kyverno; this is the same pattern.
-#
-# Starts in Audit (reports, doesn't block). Switch to Enforce once the CI
-# workflow signs images (see ../ci/sign-images.yaml) and
-# checks.signature.enabled is on in kargo-chart/platform-controls.yaml.
+# Backstop: prod images must be signed by CI, whether or not they went through Kargo.
+# Starts in Audit. Switch to Enforce once CI signs images (../ci/) and
+# checks.signature.enabled is on in platform-controls.yaml.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:

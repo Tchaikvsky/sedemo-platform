@@ -28,25 +28,7 @@ written here but applied outside it (a repo admin, `sedemo-infra-iac`).
 
 ## How it fits together
 
-```
-sedemo-monorepo/governed/<name>/platform/app-values.yaml   (tenant owns)
-        │
-        ▼
-appset.yaml  ──►  project-templates/  ──►  Argo CD AppProject + dev/staging/prod Applications
-                         │                 (+ team environments; namespaces labeled tier: <env>)
-                         │                 + gov-<name>-kargo Application
-                         ▼
-                   kargo-chart/
-                     platform-controls.yaml               the prod policy (platform owns)
-                     templates/_governed.tpl              guardrails: reject values that weaken prod
-                     templates/kargo/stages.yaml          dev, staging (tenant steps), prod (locked)
-                     templates/kargo/extra-stages.yaml    tenant stages and environments
-                     templates/kargo/prod-controls.yaml   the task every prod Stage runs
-                         │
-                         ▼  each promotion renders (Argo CD tenants)
-                   apps-chart/  ──►  Rollout, Service, Ingress  ──►  rendered/gov-<name>/<stage> branch
-                                     or, for GitHub Actions tenants, Kargo runs their workflow
-```
+![Shipping a change from a team's point of view: edit your settings file, the platform checks it, promote through your own pipeline, prod runs the same checklist for every team, then you're live with a full record](docs/how-it-fits.svg)
 
 ## What a tenant can change
 

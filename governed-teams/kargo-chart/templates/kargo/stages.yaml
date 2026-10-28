@@ -1,20 +1,9 @@
 {{- /*
-Stages for a governed tenant:
-
-  dev      auto-promoted. Tenant extra steps (pipeline.dev.extraSteps) run here.
-  staging  required. Takes Freight from dev, or from the tenant stages listed
-           in pipeline.staging.after. Platform policy check in warn mode, then
-           the tenant's extra steps (pipeline.staging.extraSteps), then a team
-           PR review.
-  prod     platform-owned and identical for every tenant. Labeled tier: prod.
-           Runs the prod-controls task before anything is written, and only
-           takes Freight from staging.
-
-Tenant stages (pipeline.extraStages) are in extra-stages.yaml.
-
-Tenants with deploy.method: github-actions get the same Stages, but each one
-deploys by running the tenant's GitHub Actions workflow instead of rendering
-manifests for Argo CD. Prod still runs prod-controls first.
+dev, staging and prod for every governed tenant:
+  dev      tenant extra steps
+  staging  required: platform policy check (warn), tenant steps, team PR review
+  prod     platform-owned: runs prod-controls, takes Freight only from staging
+Tenant stages are in extra-stages.yaml. GitHub Actions tenants deploy with their workflow.
 */ -}}
 {{- $method := include "governed.deployMethod" . }}
 apiVersion: kargo.akuity.io/v1alpha1

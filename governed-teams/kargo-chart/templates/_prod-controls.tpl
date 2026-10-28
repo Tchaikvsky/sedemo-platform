@@ -1,14 +1,7 @@
 {{/*
-governed.prodChecks: the evidence checks in the prod-controls task.
-
-Rendered twice by kargo/prod-controls.yaml:
-  - for a normal release: every check blocks
-  - for an emergency (break-glass) release: the same checks run with
-    continueOnError, so they're recorded but don't block
-
-Args: dict "c" (platform controls) "cond" (Kargo expression for when these
-steps run) "suffix" (alias suffix) "reportOnly" (bool).
-Which checks exist is decided by ../platform-controls.yaml.
+governed.prodChecks: the evidence checks inside prod-controls.
+Rendered twice: blocking for normal releases, report-only for break glass.
+Args: "c" (platform controls), "cond" (when to run), "suffix" (alias suffix), "reportOnly".
 */}}
 {{- define "governed.prodChecks" -}}
 {{- $c := .c -}}

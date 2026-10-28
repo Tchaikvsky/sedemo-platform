@@ -1,10 +1,5 @@
-# Backstop: only Argo CD writes to governed prod namespaces.
-#
-# Kargo's prod-controls run before Kargo hands a release to Argo CD. This
-# policy makes sure nobody skips that by writing to prod directly. Applies to
-# governed tenants' prod namespaces: named gov-*-prod (every governed tenant,
-# including GitHub Actions tenants), or labeled tier: prod (set by
-# governed-teams/project-templates).
+# Backstop: only Argo CD may change workloads in governed prod namespaces
+# (gov-*-prod, or labeled tier: prod), so nobody skips Kargo's prod-controls.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:

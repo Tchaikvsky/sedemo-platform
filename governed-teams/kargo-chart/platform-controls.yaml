@@ -1,9 +1,5 @@
-# Platform controls: the release policy for production.
-#
-# Every governed tenant's prod Stage and guardrails are built from this file.
-# Tenants can't change it: it ships with the platform's chart, not with their
-# app-values.yaml. Change something here, merge, and every tenant picks it up
-# on the next sync.
+# The prod release policy. Only the platform team edits this file.
+# Change a line, merge, and every tenant's prod picks it up on the next sync.
 
 # Checks every prod release must pass. Turn one off and it's skipped for all.
 checks:

@@ -1,9 +1,7 @@
 {{- /*
-One Argo CD Application per environment (dev, staging, prod), plus one per
-tenant stage with deploy: true. Each syncs the branch Kargo renders into, and
-labels its namespace with the tier so cluster policies (../../cluster-policies)
-can tell prod namespaces apart. Tenants that deploy with GitHub Actions get
-none of these: their workflow deploys.
+One Argo CD Application per environment (dev, staging, prod) and per tenant stage
+with deploy: true. Namespaces get a tier label so cluster policies can find prod.
+GitHub Actions tenants get none: their workflow deploys.
 */}}
 {{- if ne (.Values.deploy.method | default "argocd") "github-actions" }}
 {{ range $key, $val := .Values.environments }}

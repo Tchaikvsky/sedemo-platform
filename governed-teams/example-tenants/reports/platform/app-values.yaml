@@ -1,15 +1,6 @@
-# Tenant: reports
-# A team that doesn't use Argo CD: it deploys with its own GitHub Actions
-# workflow. Kargo still decides when each stage deploys, and prod still runs
-# the same platform prod-controls as every other tenant (minus the manifest
-# policy check, since Kargo never sees this team's manifests).
-#
-#   dev ──► staging ──► prod        each stage runs the workflow below with
-#                                   environment=<stage> and version=<image tag>
-#
-# The Kyverno backstop on the prod cluster (../../cluster-policies) is what
-# stops this team's workflow from deploying to prod without going through
-# Kargo.
+# Tenant: reports. Deploys with its own GitHub Actions workflow instead of Argo CD.
+# Kargo runs the workflow at each stage, and prod runs the same prod-controls first
+# (minus the manifest policy check: Kargo never sees this team's manifests).
 
 image:
   repository: ghcr.io/akuity/sedemo-monorepo-rollouts-app

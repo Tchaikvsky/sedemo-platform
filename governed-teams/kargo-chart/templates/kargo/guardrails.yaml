@@ -1,6 +1,4 @@
 {{- /*
-Runs the governed-teams guardrails (templates/_governed.tpl) first before anything
-else renders. Produces no resources: it only fails the render when a tenant's
-values try to weaken the platform's controls.
+Runs the guardrails (_governed.tpl) before anything renders. Creates nothing.
 */ -}}
 {{- include "governed.guardrails" . -}}

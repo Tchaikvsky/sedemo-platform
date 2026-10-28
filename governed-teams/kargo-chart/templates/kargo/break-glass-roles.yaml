@@ -1,8 +1,5 @@
 {{- /*
-Break-glass role: the people who may authorize an emergency prod release.
-The group comes from platform-controls.yaml (groups.breakGlass). They can start
-a prod promotion if necessary; the prod-controls task then asks someone in the same group
-to authorize the emergency path.
+Break-glass role: the group (groups.breakGlass) that authorizes emergency prod releases.
 */ -}}
 {{- $c := .Files.Get "platform-controls.yaml" | fromYaml -}}
 {{- if $c.breakGlass.enabled }}

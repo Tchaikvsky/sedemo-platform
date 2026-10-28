@@ -1,15 +1,7 @@
 {{/*
-============================================================================
-governed-teams guardrails
-
-Render-time checks on the tenant's platform/app-values.yaml. Each check fails
-the render with "GUARDRAIL [rule]: reason". Argo CD shows that message on the
-tenant's gov-<name>-kargo Application, and nothing reaches Kargo.
-
-The policy lists (allowed steps, approved registries and deploy repos) live in
-../platform-controls.yaml, next to the prod controls. The structural lists
-below (which top-level keys exist, reserved names) live here.
-============================================================================
+Guardrails: checks on a tenant's app-values.yaml before anything renders.
+A failure shows as "GUARDRAIL [rule]: reason" on the tenant's gov-<name>-kargo app.
+The allowlists live in ../platform-controls.yaml; the structural lists are below.
 */}}
 
 {{/* Top-level keys a tenant may set in app-values.yaml. */}}

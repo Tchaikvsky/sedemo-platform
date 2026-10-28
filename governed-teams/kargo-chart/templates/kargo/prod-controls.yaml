@@ -1,29 +1,7 @@
 {{- /*
-prod-controls: the platform's release controls for production.
-
-Every governed tenant's prod Stage runs this task, and it's identical for all
-of them. Tenants can't change it: it's rendered from this file and from
-../../platform-controls.yaml, which only the platform team edits, and tenant
-roles have no write access to PromotionTasks.
-
-A prod release goes like this:
-
-  0. release-type    the person releasing says normal or emergency, with a note
-  normal release:
-  1. checks          image scan, policy check, CI evidence, secret scan,
-                     signature (whichever platform-controls.yaml turns on);
-                     any failure or missing evidence blocks the release
-  2. change gate     approval by the approvers group, or a ServiceNow change
-                     request that must reach Implement
-  3. evidence        an audit event plus a record on the Freight of who
-                     approved, which checks passed and the note
-  emergency release (break glass):
-  1. checks          the same checks run but only report
-  2. authorization   someone in the break-glass group authorizes
-  3. incident        audit event, optional ServiceNow incident, and a Freight
-                     record marked for review
-
-Nothing is written to the prod branch until this task finishes.
+prod-controls: the checklist every governed tenant's prod release runs.
+Built from ../../platform-controls.yaml. Tenants can't edit either.
+Nothing is written to the prod branch until it finishes.
 */ -}}
 {{- $c := .Files.Get "platform-controls.yaml" | fromYaml -}}
 {{- $bg := $c.breakGlass.enabled -}}

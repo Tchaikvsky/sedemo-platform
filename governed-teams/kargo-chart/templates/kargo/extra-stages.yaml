@@ -1,19 +1,8 @@
 {{- /*
-Tenant stages (tier 3), from pipeline.extraStages in app-values.yaml.
-
-Two kinds:
-  deploy: true   A real environment (QA, UAT, perf...): renders the app into
-                 its own namespace and branch, syncs its own Argo CD app
-                 (created by project-templates), then runs the team's steps
-                 against the deployed app. For deploy.method: github-actions
-                 tenants, the team's workflow deploys it instead.
-  deploy: false  A test gate: runs only the team's steps (contract tests,
-                 smoke tests against another environment, sign-off...).
-
-A tenant stage follows dev, staging or another tenant stage. Stages on the dev
-side can gate staging (pipeline.staging.after). Prod's source is fixed to
-staging in stages.yaml, so no tenant stage is ever a path to prod.
-_governed.tpl checks names, sources and steps before this renders.
+Tenant stages, from pipeline.extraStages (up to 5):
+  deploy: true   a real environment with its own namespace and Argo CD app
+  deploy: false  a test gate that only runs the team's steps
+Prod only takes Freight from staging, so no tenant stage is a path to prod.
 */ -}}
 {{- $method := include "governed.deployMethod" . }}
 {{- range $st := .Values.pipeline.extraStages }}

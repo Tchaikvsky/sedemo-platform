@@ -1,13 +1,6 @@
-# Stretch (gauntlet 4h): guard the Kargo control plane itself.
-#
-# Only for a self-hosted Kargo control plane where Kyverno runs next to Kargo.
-# Akuity-hosted Kargo doesn't run customer admission policies on its control
-# plane; there, the guardrails in kargo-chart/templates/_governed.tpl and
-# tenant RBAC do this job.
-#
-# Any Stage named prod (or labeled tier: prod) must be labeled tier: prod and
-# must run the prod-controls PromotionTask. So nobody can create a prod Stage
-# without the controls, even with kubectl access to Kargo.
+# Self-hosted Kargo only: every prod Stage must be labeled tier: prod and run
+# prod-controls, even if someone creates it with kubectl.
+# On Akuity-hosted Kargo, the guardrails and tenant RBAC do this job instead.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:

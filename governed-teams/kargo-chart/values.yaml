@@ -1,11 +1,5 @@
-# governed-teams Kargo chart
-#
-# Tenants set values in their own platform/app-values.yaml. What they can change
-# is in the TENANT sections below. The prod pipeline is NOT a value: it lives in
-# templates/kargo/prod-controls.yaml and templates/kargo/stages.yaml, which only
-# the platform team edits, driven by platform-controls.yaml next to this file.
-# templates/_governed.tpl rejects any values that try to weaken it, and Argo
-# CD shows the reason on the tenant's -kargo Application.
+# Chart defaults. Tenants don't edit this file: they set the TENANT values below in their
+# own app-values.yaml. Prod isn't a value; it's driven by platform-controls.yaml.
 
 # ============================================================================
 # PLATFORM: set by governed-teams/project-templates (valuesObject), which
