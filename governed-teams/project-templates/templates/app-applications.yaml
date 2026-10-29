@@ -23,7 +23,7 @@ spec:
     targetRevision: rendered/{{ $.Values.application.name }}/{{$key}}
     path: .
   destination:
-    name: k3d-staging
+    name: '{{ $.Values.platform.cluster }}'
     namespace: {{ $.Values.application.name }}-{{$key}}
   syncPolicy:
     automated:
@@ -69,7 +69,7 @@ spec:
     targetRevision: rendered/{{ $.Values.application.name }}/{{ $name }}
     path: .
   destination:
-    name: k3d-staging
+    name: '{{ $.Values.platform.cluster }}'
     namespace: {{ $.Values.application.name }}-{{ $name }}
   syncPolicy:
     automated:

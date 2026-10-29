@@ -3,7 +3,7 @@
 Kargo is the paved road to prod. These Kyverno policies are the lock on the
 prod cluster, for anyone who tries to go around the road: `kubectl apply`, a
 GitHub Actions job with cluster credentials, an Argo CD app pointed somewhere
-else. CBA already runs Kyverno, so this is the layer they recognize.
+else. Many platform teams already run Kyverno, so it's a layer they'll recognize.
 
 They are **not** applied by anything in this repo. Cluster-level policy for the
 demo environment lives in `akuity/sedemo-infra-iac`, so applying them is a PR

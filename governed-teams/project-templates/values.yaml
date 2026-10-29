@@ -12,11 +12,13 @@ project:
   group: sedemo-team-open
   path: governed/template
 
-# Where the platform-owned charts live. Set by the appset.
+# Where the platform-owned charts live, and the Argo CD cluster the tenant's
+# environments deploy to. Set by the appset.
 platform:
   repoUrl: https://github.com/akuity/sedemo-platform
   branch: main
   dir: governed-teams
+  cluster: k3d-staging   # test instance only; the governed-teams branch uses sedemo-primary
 
 # Platform-wide RBAC group prefix (e.g. sedemo-admin, sedemo-qa).
 team:

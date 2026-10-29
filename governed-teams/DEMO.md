@@ -1,10 +1,10 @@
 # Demo runbook: governed releases with Kargo
 
 Ten scenes in about 60 minutes. The prod control comes first and tenant
-flexibility second, the order Dennis asked for. Each scene says what to show,
+flexibility second, the order the customer asked for. Each scene says what to show,
 what to say, what should happen and what to do if it doesn't.
 
-Share one window, zoomed in. Teams, not Zoom.
+Share one window, zoomed in.
 
 ## The one-sentence story
 
@@ -28,9 +28,14 @@ Kargo is the paved road through the lock; Kyverno and GitHub are the lock.
 | Approver (`sedemo-approver`) | Approve prod releases |
 | Break glass (`sedemo-breakglass`) | Authorize emergency prod releases |
 
-You need two logins: yourself (in `sedemo-admin`, `sedemo-approver` and
-`sedemo-breakglass`) and a "tenant developer" (only `sedemo-team`), e.g. a
-second browser profile.
+You need three logins, one browser profile each, so nobody on screen
+approves their own release:
+
+| Login | Groups | Plays |
+| --- | --- | --- |
+| Tenant developer | `sedemo-team` | The team that built the change. Gets denied in scenes 2 and 4. |
+| Releaser | `sedemo-admin` | Starts prod releases and picks the release type (scenes 2, 3, 5). |
+| Approver | `sedemo-approver`, `sedemo-breakglass` | Approves normal releases and authorizes break glass (scenes 2, 5). |
 
 ## Before the demo
 
@@ -39,14 +44,13 @@ The day before:
 - [ ] `governed-teams/tests/verify.sh` passes
 - [ ] The `governed-team-projects` ApplicationSet is registered and `payments`, `checkout`, `reports` are in `sedemo-monorepo/governed/` (`demo/reset-tenants.sh`)
 - [ ] `gitleaks-scan` and `cosign-verify` exist in Kargo (they deploy from `kargo-shared/` on merge)
-- [ ] The groups above exist and both logins are in the right ones
+- [ ] The groups above exist and all three logins are in the right ones
 - [ ] One Freight per tenant is already through staging, so prod promotions are ready to go
 - [ ] One full normal prod release and one break-glass release have worked end to end
 - [ ] If `changeGate` or `breakGlass.incident` is `servicenow`: the ServiceNow instance is awake (developer instances hibernate)
 - [ ] Optional layers you'll show live: ruleset (`github/`), Kyverno backstop (`cluster-policies/`)
 
 The morning of: dry run scenes 2, 3 and 5, then `demo/reset-tenants.sh`.
-10am Sydney is 6pm Eastern the evening before.
 
 ## Run of show
 
@@ -77,7 +81,7 @@ model drawing: Kargo is the paved road, Kyverno and GitHub are the lock.
 
 **Show:**
 
-1. `kargo-chart/platform-controls.yaml`: "This file is the bank's prod
+1. `kargo-chart/platform-controls.yaml`: "This file is your prod
    policy. Which checks run, how changes are approved, who can break glass."
 2. `kargo-chart/templates/kargo/prod-controls.yaml`: the one task every prod
    Stage runs.
@@ -98,13 +102,13 @@ on your branch, sync, and show both tenants' `prod-controls` changed. Set it bac
 
 **Show:**
 
-1. In `gov-payments`, promote the staged Freight to prod.
+1. As the releaser: in `gov-payments`, promote the staged Freight to prod.
 2. The release-type form appears: choose **normal**, note "Q4 fee change".
    Only releasers and break glass can answer it; the tenant developer can't.
 3. The checks run: image scan, policy check, CI evidence, secret scan.
 4. It stops at **change-approval** and waits. Nothing has been written to the prod branch.
 5. As the tenant developer: try to approve. Denied (not in `sedemo-approver`).
-6. As yourself: approve with a note. It continues: PR opened and merged on
+6. As the approver: approve with a note. It continues: PR opened and merged on
    `rendered/gov-payments/prod`, Argo CD syncs.
 
 **Say:** "Without an approved change, it's blocked and waiting. The team that
@@ -126,7 +130,7 @@ step says what it's waiting for.
    `governed/checkout/platform/app-values.yaml`, commit, push.
 2. Promote checkout to staging: the platform policy check **warns** and asks
    for an exception. Teams hear about it early.
-3. Promote to prod: **policy-check** blocks with the policy's message. The
+3. As the releaser, promote to prod: **policy-check** blocks with the policy's message. The
    audit log records `prod-release-blocked`.
 4. Put the label back (`demo/reset-tenants.sh <clone> checkout`).
 
@@ -147,16 +151,68 @@ missing evidence is a failure."
 
 Hand this scene to their engineers: "How would you get around it?"
 
-**Before the call:** `demo/gauntlet.sh` prints every config attempt and the
-rule that stops it. Keep the output open as a backup.
+Start with two live attempts, made the way a tenant developer would: edit the
+team's own `governed/payments/platform/app-values.yaml` in GitHub and commit.
+That file is the only thing a team controls. Then walk the table for the rest.
+
+**Live attempt 1: switch off a prod check (4a)**
+
+1. Edit the file in GitHub and add at the bottom:
+
+   ```yaml
+   prodControls:
+     imageScan: false
+   ```
+
+2. Commit to `main` ("turn off the prod image scan").
+3. In Argo CD, open `gov-payments-kargo` and click **Refresh**. It shows
+   `GUARDRAIL [locked-setting]: 'prodControls' can't be set in app-values.yaml…`
+4. In Kargo, the payments pipeline hasn't changed.
+5. Delete the lines and commit.
+
+**Say:** "This is the only file the team controls. They tried to switch off
+the prod scan, and the platform refused it before it reached Kargo."
+
+**Live attempt 2: add a step that skips prod's checks (4b)**
+
+1. Same file. Add at the bottom:
+
+   ```yaml
+   pipeline:
+     staging:
+       extraSteps:
+       - uses: git-push
+         config:
+           path: ./out
+           targetBranch: rendered/gov-payments/prod
+   ```
+
+2. Commit to `main` ("push to prod from staging").
+3. Refresh `gov-payments-kargo`. It shows
+   `GUARDRAIL [step-allowlist]: pipeline.staging.extraSteps[0] uses 'git-push', which tenants can't run…`
+4. Delete the lines and commit.
+
+To show a step added to prod itself, change `staging:` to `prod:`. That's
+blocked by `GUARDRAIL [prod-locked]`.
+
+**Say:** "Teams can add steps, but only from the platform's approved list, and
+nothing on that list writes to Git or deploys."
+
+**If they ask** "`http` is on the list, so couldn't a step call GitHub's API
+and push that way?": a tenant step can't read the platform's credentials
+(guardrail `shared-secrets`), and a push with someone's own token hits the
+GitHub ruleset on the prod branch (4e). That's what the ruleset is for.
+
+**The full gauntlet.** `demo/gauntlet.sh` prints every config attempt and the
+rule that stops it. Keep its output open as a backup.
 
 | # | Attempt | Stopped by | Show it |
 | --- | --- | --- | --- |
-| 4a | Remove a prod check, or add a step to prod, in the team's values | Guardrail `locked-setting` / `prod-locked` | `demo/try-rejected.sh <clone> payments remove-prod-check`, push, open `gov-payments-kargo` in Argo CD |
-| 4b | Add a staging step that pushes to the prod branch | Guardrail `step-allowlist` | `try-rejected.sh … git-push-in-staging` |
-| 4b2 | Deploy an image from an unapproved registry | Guardrail `registry-allowlist`, then the prod policy | `try-rejected.sh … unapproved-registry` |
-| 4b3 | Turn off staging | Guardrail `locked-setting` | `try-rejected.sh … skip-staging` |
-| 4b4 | Add a stage that feeds prod | Guardrail `prod-source-fixed` | `try-rejected.sh … stage-feeds-prod` |
+| 4a | Remove a prod check, or add a step to prod, in the team's values | Guardrail `locked-setting` / `prod-locked` | Live attempt 1 |
+| 4b | Add a staging step that pushes to the prod branch | Guardrail `step-allowlist` | Live attempt 2 |
+| 4b2 | Deploy an image from an unapproved registry | Guardrail `registry-allowlist`, then the prod policy | `demo/try-rejected.sh <clone> payments unapproved-registry` |
+| 4b3 | Turn off staging | Guardrail `locked-setting` | `gauntlet.sh` output only. Not live yet: it also removes the tenant's staging app until undone |
+| 4b4 | Add a stage that feeds prod | Guardrail `prod-source-fixed` | `demo/try-rejected.sh <clone> payments stage-feeds-prod` |
 | 4c | Edit the prod Stage in Kargo | Kargo RBAC | As the tenant developer, try in the UI |
 | 4d | Approve your own prod release | Approvers group | As the tenant developer, try to approve |
 | 4e | Push straight to `rendered/gov-payments/prod` | GitHub ruleset | `git push origin HEAD:rendered/gov-payments/prod` (only once the ruleset is active) |
@@ -164,7 +220,7 @@ rule that stops it. Keep the output open as a backup.
 | 4g | Deploy from GitHub Actions, skipping Kargo | Kyverno backstop; `deploy-allowlist` for unapproved workflows | Same as 4f |
 | 4h | Create a prod Stage without the controls (stretch) | Kyverno on a self-hosted Kargo control plane | Show `cluster-policies/kargo-prod-stages.yaml` |
 
-Reset after: `demo/reset-tenants.sh <clone>`, push.
+Reset after: undo each edit, or run `demo/reset-tenants.sh <clone>` and push.
 
 **Say what's left, plainly:** "A cluster-admin, a GitHub org owner or a Kargo
 admin can still change the rules themselves. You can't put a gate everywhere.
@@ -175,19 +231,20 @@ emergencies go through break glass."
 
 **Show:**
 
-1. In `gov-payments`, promote to prod and choose **emergency**, reason
-   "Hotfix for payment outage INC-123".
+1. As the releaser: in `gov-payments`, promote to prod and choose
+   **emergency**, reason "Hotfix for payment outage INC-123".
 2. The checks still run but only report.
-3. It waits for **break-glass-approval**. As someone in `sedemo-breakglass`,
-   authorize.
+3. It waits for **break-glass-approval**. As the approver (in
+   `sedemo-breakglass`), authorize.
 4. It releases. Show the Freight: `prod-release: emergency`,
    `break-glass-requested-by`, `-authorized-by`, `-reason`,
    `break-glass-review: pending`.
 5. The audit log: a `break-glass` event. With `incident: servicenow`, the
    incident it raised.
 
-**Say:** "Break glass exists, it raises an incident, and it leaves a trail
-you review afterwards: who, why, and which checks it skipped."
+**Say:** "Break glass exists, it's recorded as an audit event (a ServiceNow
+incident once that's switched on), and it leaves a trail you review
+afterwards: who, why, and which checks it skipped."
 
 ## 6. Evidence for audit (5 min)
 
@@ -236,7 +293,7 @@ session.
 
 ## 9. POC ask (2 min)
 
-A one-tenant POC before Christmas, with success criteria Dennis signs off:
+A one-tenant POC before Christmas, with success criteria the customer signs off:
 
 - [ ] A prod promotion without a valid change is blocked (scene 2)
 - [ ] Unsigned, Snyk-failing or unscanned images are blocked, using evidence from existing CI (scene 3)
@@ -268,4 +325,4 @@ stop it, you'll have stopped it."
 
 ## After the demo
 
-`demo/reset-tenants.sh <clone>`, push. Send the POC success criteria to Dennis within 48 hours.
+`demo/reset-tenants.sh <clone>`, push. Send the POC success criteria to the customer within 48 hours.

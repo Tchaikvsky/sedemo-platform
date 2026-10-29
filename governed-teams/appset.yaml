@@ -42,6 +42,7 @@ spec:
               repoUrl: https://github.com/Tchaikvsky/sedemo-platform
               branch: main              # <- your branch, when testing
               dir: governed-teams
+              cluster: k3d-staging      # <- your cluster, when testing
             project:
               path: governed/{{.path.basename}}
               name: 'governed-{{.path.basename}}'

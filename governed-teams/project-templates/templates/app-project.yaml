@@ -12,9 +12,9 @@ spec:
   - '*'
   destinations: 
   - namespace: '{{ .Values.application.name }}-*'
-    name: 'k3d-staging'
+    name: '{{ .Values.platform.cluster }}'
   - namespace: 'kargo-sync-jobs'
-    name: 'k3d-staging'
+    name: '{{ .Values.platform.cluster }}'
   - namespace: '{{ .Values.application.name }}'
     name: 'kargo'
   - namespace: ''
