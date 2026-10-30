@@ -1,9 +1,9 @@
 # Tenant: checkout. Its own pipeline before prod, set up by the team without the platform team:
 #
 #   dev ──► qa ──► staging ──► prod     (prod is the platform's, same for everyone)
-#                     └──► perf
+#                     └──► smoke-test
 #
-# qa: its own environment, smoke-tested. perf: smoke-tests staging. Extra scans in dev and staging.
+# qa: its own environment, smoke-tested. smoke-test: checks the staging app responds. Extra scans in dev and staging.
 
 image:
   repository: ghcr.io/akuity/sedemo-monorepo-rollouts-app
@@ -53,11 +53,11 @@ pipeline:
         method: GET
         url: https://qa.checkout-gov.akpdemoapps.link/
         successExpression: response.status == 200
-  - name: perf
+  - name: smoke-test
     after: staging
     steps:
     - uses: http
-      as: smoke-test
+      as: check-staging
       config:
         method: GET
         url: https://staging.checkout-gov.akpdemoapps.link/

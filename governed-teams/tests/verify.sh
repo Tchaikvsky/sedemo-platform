@@ -3,7 +3,7 @@
 #   1. every tenant in example-tenants/ renders (Kargo and Argo CD side)
 #   2. every tenant gets exactly the same prod-controls task, and every Argo CD
 #      tenant exactly the same prod Stage (tenant name aside)
-#   3. checkout's own steps, qa environment and perf stage, and reports'
+#   3. checkout's own steps, qa environment and smoke-test stage, and reports'
 #      GitHub Actions deploys, show up as designed
 #   4. platform-controls.yaml switches checks, the change gate and break glass
 #      for everyone at once
@@ -100,7 +100,7 @@ if [ -s "$OUT/payments.yaml" ]; then
   check "prod skips the merge when the promotion changes nothing" 'doc payments Stage prod | grep -A3 "uses: git-merge-pr" | grep -qF "?.pr != nil"'
 fi
 if [ -s "$OUT/checkout.yaml" ]; then
-  for s in manifest-check second-scan smoke-test "name: perf"; do
+  for s in manifest-check second-scan check-staging "name: smoke-test"; do
     check "checkout has $s" 'grep -q "$s" "$OUT/checkout.yaml"'
   done
   check "checkout qa deploys its own Argo CD app" 'doc checkout Stage qa | grep -q "name: TENANT-qa"'
@@ -109,7 +109,7 @@ if [ -s "$OUT/checkout.yaml" ]; then
   check "checkout staging no longer takes Freight from dev" '! doc checkout Stage staging | grep -A2 "stages:" | grep -q -- "- dev"'
   check "checkout qa auto-promotes" 'grep -A1 "tenant stage with autoPromote" "$OUT/checkout.yaml" | grep -q "stageSelector"'
   check "project-templates creates gov-checkout-qa" 'grep -q "name: '"'"'gov-checkout-qa'"'"'" "$OUT/checkout-apps.yaml"'
-  check "no Argo CD app for the perf test stage" '! grep -q "gov-checkout-perf" "$OUT/checkout-apps.yaml"'
+  check "no Argo CD app for the smoke-test stage" '! grep -q "gov-checkout-smoke-test" "$OUT/checkout-apps.yaml"'
 fi
 if [ -s "$OUT/reports.yaml" ]; then
   for st in dev staging prod; do

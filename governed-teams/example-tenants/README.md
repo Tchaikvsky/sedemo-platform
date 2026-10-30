@@ -12,7 +12,7 @@ creates Kargo project `gov-<name>`.
 | Tenant | Pre-prod pipeline | Prod |
 | --- | --- | --- |
 | `payments` | Golden path only: dev, staging | Platform prod-controls |
-| `checkout` | dev → **qa** (its own environment) → staging, plus a `perf` test stage after staging, a manifest check in dev and a second image scan in staging | Same platform prod-controls |
+| `checkout` | dev → **qa** (its own environment) → staging, plus a `smoke-test` stage after staging, a manifest check in dev and a second image scan in staging | Same platform prod-controls |
 | `reports` | Doesn't use Argo CD: each stage runs the team's GitHub Actions workflow | Same platform prod-controls, then the workflow deploys |
 
 `payments` and `checkout` get identical prod Stages, and all three get the

@@ -90,7 +90,7 @@
   <text class="m" x="41" y="247">app-values.yaml</text>
   <text class="s" x="41" y="270">Image, labels, extra checks,</text>
   <text class="s" x="41" y="288">your own stages like qa or</text>
-  <text class="s" x="41" y="306">perf. Then push.</text>
+  <text class="s" x="41" y="306">smoke-test. Then push.</text>
 
   <!-- 2. Checked -->
   <rect class="p" x="250" y="180" width="200" height="110" rx="8"/>

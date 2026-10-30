@@ -17,7 +17,7 @@ Kargo is the paved road through the lock; Kyverno and GitHub are the lock.
 | Tenant | What it shows |
 | --- | --- |
 | `gov-payments` | The plain golden path: dev → staging → prod |
-| `gov-checkout` | Its own pipeline: dev → qa (its own environment) → staging → prod, a perf test stage, extra checks. Same prod. |
+| `gov-checkout` | Its own pipeline: dev → qa (its own environment) → staging → prod, a smoke-test stage after staging, extra checks. Same prod. |
 | `gov-reports` | Doesn't use Argo CD: Kargo runs its GitHub Actions workflow. Same prod controls. |
 
 | Person (SSO group) | Can |
@@ -87,7 +87,7 @@ model drawing: Kargo is the paved road, Kyverno and GitHub are the lock for prod
 3. Kargo UI, `gov-payments` then `gov-checkout`: different pipelines before
    prod, the same prod Stage, the same `prod-controls` task.
 4. `example-tenants/checkout/platform/app-values.yaml`: the team added a qa
-   environment, a perf stage and its own checks without asking anyone.
+   environment, a smoke-test stage and its own checks without asking anyone.
 5. Roles: the table above, including break glass.
 
  "Change a prod control or security once, here, and every tenant picks it up on the next

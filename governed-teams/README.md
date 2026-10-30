@@ -39,12 +39,12 @@ All in their own `platform/app-values.yaml`. See [`kargo-chart/values.yaml`](kar
 | 1. Settings | Image, Rollouts on/off, ingress prefix, labels, replicas, S3, Slack | `rollouts.enabled: false` |
 | 1. How they deploy | Argo CD (default), or their own GitHub Actions workflow | `deploy.method: github-actions` |
 | 2. Extra steps | Steps in dev or staging, from the allowlist | a Grype scan in staging |
-| 3. Their own stages | Up to 5, after dev, staging or each other. `deploy: true` makes one a real environment; `autoPromote: true` promotes automatically | a `qa` environment, a `perf` test stage |
+| 3. Their own stages | Up to 5, after dev, staging or each other. `deploy: true` makes one a real environment; `autoPromote: true` promotes automatically | a `qa` environment, a `smoke-test` stage |
 | 3. Staging's source | Put their dev-side stages in front of staging | `pipeline.staging.after: [qa]` |
 
 ```
 payments:  dev ──► staging ──► prod
-checkout:  dev ──► qa ──► staging ──► prod        (+ perf after staging)
+checkout:  dev ──► qa ──► staging ──► prod        (+ smoke-test after staging)
 reports:   dev ──► staging ──► prod               (each stage runs the team's GitHub Actions workflow)
                                 └── prod is the same for all three
 ```
