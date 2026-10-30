@@ -18,7 +18,7 @@ platform:
   repoUrl: https://github.com/akuity/sedemo-platform
   branch: main
   dir: governed-teams
-  cluster: k3d-staging   # test instance only; the governed-teams branch uses sedemo-primary
+  cluster: sedemo-primary
 
 # Platform-wide RBAC group prefix (e.g. sedemo-admin, sedemo-qa).
 team:
