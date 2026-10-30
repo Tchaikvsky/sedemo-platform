@@ -2,10 +2,12 @@
 One Argo CD Application per environment (dev, staging, prod) and per tenant stage
 with deploy: true. Namespaces get a tier label so cluster policies can find prod.
 GitHub Actions tenants get none: their workflow deploys.
+Always all three environments, whatever the tenant file says: a file that turns
+staging off is rejected by kargo-chart's guardrails, and it mustn't delete the
+staging app on its way to being rejected.
 */}}
 {{- if ne (.Values.deploy.method | default "argocd") "github-actions" }}
-{{ range $key, $val := .Values.environments }}
-{{ if or ( $.Values.environments.staging) (ne $key "staging") }}
+{{ range $key := list "dev" "staging" "prod" }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -39,7 +41,6 @@ spec:
     retry:
       limit: 2
 ---
-{{ end }}
 {{ end }}
 {{- /*
 Tenant environments: one Application per pipeline.extraStages entry with

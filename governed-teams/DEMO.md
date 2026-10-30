@@ -210,7 +210,7 @@ rule that stops it. Keep its output open as a backup.
 | 4a | Remove a prod check, or add a step to prod, in the team's values | Guardrail `locked-setting` / `prod-locked` | Live attempt 1 |
 | 4b | Add a staging step that pushes to the prod branch | Guardrail `step-allowlist` | Live attempt 2 |
 | 4b2 | Deploy an image from an unapproved registry | Guardrail `registry-allowlist`, then the prod policy | `demo/try-rejected.sh <clone> payments unapproved-registry` |
-| 4b3 | Turn off staging | Guardrail `locked-setting` | `gauntlet.sh` output only. Not live yet: it also removes the tenant's staging app until undone |
+| 4b3 | Turn off staging | Guardrail `locked-setting` | In the team's file, change `staging: true` to `staging: false` and commit |
 | 4b4 | Add a stage that feeds prod | Guardrail `prod-source-fixed` | `demo/try-rejected.sh <clone> payments stage-feeds-prod` |
 | 4c | Edit the prod Stage in Kargo | Kargo RBAC | As the tenant developer, try in the UI |
 | 4d | Approve your own prod release | Approvers group | As the tenant developer, try to approve |

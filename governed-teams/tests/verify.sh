@@ -96,6 +96,8 @@ if [ -s "$OUT/payments.yaml" ]; then
   check "payments has no tenant steps" '! grep -q "tenant steps" "$OUT/payments.yaml"'
   check "payments staging still waits for dev" 'doc payments Stage staging | grep -A2 "stages:" | grep -q -- "- dev"'
   check "payments prod namespace is labeled tier: prod" 'grep -A12 "namespace: gov-payments-prod" "$OUT/payments-apps.yaml" | grep -q "tier: prod"'
+  check "staging skips the PR review when the promotion changes nothing" 'doc payments Stage staging | grep -A3 "as: wait-for-pr" | grep -qF "?.pr != nil"'
+  check "prod skips the merge when the promotion changes nothing" 'doc payments Stage prod | grep -A3 "uses: git-merge-pr" | grep -qF "?.pr != nil"'
 fi
 if [ -s "$OUT/checkout.yaml" ]; then
   for s in manifest-check second-scan smoke-test "name: perf"; do
@@ -155,6 +157,12 @@ for f in "$DIR"/example-tenants/rejected/*.yaml; do
     bad "$n rejected for the wrong reason: $(cat "$OUT/rej-$n.err")"
   fi
 done
+if render_apps rej-skip-staging "$DIR/example-tenants/rejected/skip-staging.yaml"; then
+  check "a rejected file that turns staging off doesn't remove the staging app" \
+    'grep -q "name: '"'"'gov-rej-skip-staging-staging'"'"'" "$OUT/rej-skip-staging-apps.yaml"'
+else
+  bad "Argo CD apps render for skip-staging: $(cat "$OUT/rej-skip-staging-apps.err")"
+fi
 
 echo
 echo "$pass passed, $fail failed. Rendered output: $OUT"

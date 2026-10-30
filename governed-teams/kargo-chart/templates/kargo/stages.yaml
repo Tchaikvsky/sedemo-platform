@@ -240,6 +240,8 @@ spec:
           description: Promote {{ printf "${{ imageFrom('%s').Tag }}" .Values.image.repository }} to staging\n"https://kargo.akpdemoapps.link/project/{{ .Values.application.name }}/promotion/{{`${{ ctx.promotion }}`}}"
       {{- if .Values.notifications.slack.enabled }}
       - uses: send-message
+        # Only when a PR was opened: the message links to it.
+        if: {{`"${{ success() && outputs['open-pr']?.pr != nil }}"`}}
         config:
           channel:
             kind: MessageChannel
@@ -263,6 +265,8 @@ spec:
       {{- end }}
       - uses: git-wait-for-pr
         as: wait-for-pr
+        # Skip when there was nothing to change (no PR opened).
+        if: {{`"${{ success() && outputs['open-pr']?.pr != nil }}"`}}
         config:
           repoURL: {{ .Values.repoUrl }}
           prNumber: {{`${{ outputs['open-pr'].pr.id }}`}}
@@ -382,6 +386,8 @@ spec:
           description: Approved prod release of {{ printf "${{ imageFrom('%s').Tag }}" .Values.image.repository }}. Prod controls passed.\n"https://kargo.akpdemoapps.link/project/{{ .Values.application.name }}/promotion/{{`${{ ctx.promotion }}`}}"
       {{- if .Values.notifications.slack.enabled }}
       - uses: send-message
+        # Only when a PR was opened: the message links to it.
+        if: {{`"${{ success() && outputs['open-pr']?.pr != nil }}"`}}
         config:
           channel:
             kind: MessageChannel
@@ -404,6 +410,8 @@ spec:
           encodingType: yaml
       {{- end }}
       - uses: git-merge-pr
+        # Skip when there was nothing to change (no PR opened).
+        if: {{`"${{ success() && outputs['open-pr']?.pr != nil }}"`}}
         config:
           repoURL: {{ .Values.repoUrl }}
           prNumber: {{`${{ outputs['open-pr'].pr.id }}`}}
