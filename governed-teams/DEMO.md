@@ -22,8 +22,8 @@ Kargo is the paved road through the lock; Kyverno and GitHub are the lock.
 
 | Person (SSO group) | Can |
 | --- | --- |
-| Tenant developer (`sedemo-team`) | Promote to dev and the team's own stages. Change the team's `app-values.yaml`. |
-| QA (`sedemo-qa`) | Promote to staging |
+| Tenant developer (`sedemo-team`) (not implemented yet) | Promote to dev and the team's own stages. Change the team's `app-values.yaml`. |
+| QA (`sedemo-qa`) (not implemented yet)| Promote to staging |
 | SRE (`sedemo-admin`) | Promote anywhere; start prod releases and fill in their release type |
 | Approver (`sedemo-approver`) | Approve prod releases |
 | Break glass (`sedemo-breakglass`) | Authorize emergency prod releases |
@@ -71,11 +71,10 @@ The morning of: dry run scenes 2, 3 and 5, then `demo/reset-tenants.sh`.
 
 ## 0. The audit question (3 min)
 
-**Say:** "A team released to prod without a valid change, and audit asked why
-you didn't stop it. Today we'll show you stopping it."
+The reason this came up in the first place: "A team released to prod without a valid change, and the team was asked why they didn't stop it. Today we'll show you stopping it."
 
 **Show:** the diagram in `README.md` ("How it fits together"), or the control
-model drawing: Kargo is the paved road, Kyverno and GitHub are the lock.
+model drawing: Kargo is the paved road, Kyverno and GitHub are the lock for production.
 
 ## 1. One policy, every prod environment (7 min)
 
@@ -91,7 +90,7 @@ model drawing: Kargo is the paved road, Kyverno and GitHub are the lock.
    environment, a perf stage and its own checks without asking anyone.
 5. Roles: the table above, including break glass.
 
-**Say:** "Change a control once, here, and every tenant picks it up on the next
+ "Change a prod control or security once, here, and every tenant picks it up on the next
 sync. Teams don't open PRs to the platform team to ship. The platform team
 owns the rules, not each release."
 
@@ -107,13 +106,13 @@ on your branch, sync, and show both tenants' `prod-controls` changed. Set it bac
    Only releasers and break glass can answer it; the tenant developer can't.
 3. The checks run: image scan, policy check, CI evidence, secret scan.
 4. It stops at **change-approval** and waits. Nothing has been written to the prod branch.
-5. As the tenant developer: try to approve. Denied (not in `sedemo-approver`).
-6. As the approver: approve with a note. It continues: PR opened and merged on
-   `rendered/gov-payments/prod`, Argo CD syncs.
+5. As the tenant developer: try to approve. Denied (not in `sedemo-approver`). 
+6. Rerun the freight and as the approver: approve with a note. It continues: PR opened and merged on
+   `rendered/gov-payments/prod`, approve the PR and Argo CD syncs.
 
-**Say:** "Without an approved change, it's blocked and waiting. The team that
+Something like: "Without an approved change, it's blocked and waiting. The team that
 built it can't approve it. Approval doesn't make the platform team a
-bottleneck: it's whoever your change process says."
+bottleneck: it's whoever your change process says. In this demo we users to a specific group that's capable of approval. We also only require one approval in this demo but that number could be increased in the wait-for-approvals configuration, that way even if a member of the approval group shipped something, it would still require an additional set of eyes for review." -- This is being used in the demo instead of ServiceNow.
 
 **With ServiceNow** (`changeGate: servicenow`): step 4 raises a change
 request instead. Open it in ServiceNow, move it to Implement, and the release
@@ -149,7 +148,7 @@ missing evidence is a failure."
 
 ## 4. Circumvention gauntlet (12 min)
 
-Hand this scene to their engineers: "How would you get around it?"
+Show some potential ways an engineer might try to bypass these rules
 
 Start with two live attempts, made the way a tenant developer would: edit the
 team's own `governed/payments/platform/app-values.yaml` in GitHub and commit.
@@ -170,7 +169,7 @@ That file is the only thing a team controls. Then walk the table for the rest.
 4. In Kargo, the payments pipeline hasn't changed.
 5. Delete the lines and commit.
 
-**Say:** "This is the only file the team controls. They tried to switch off
+This shows: "This is the only file the team controls. They tried to switch off
 the prod scan, and the platform refused it before it reached Kargo."
 
 **Live attempt 2: add a step that skips prod's checks (4b)**
@@ -259,7 +258,7 @@ afterwards: who, why, and which checks it skipped."
   `git log governed-teams/kargo-chart/platform-controls.yaml` is the history
   of the policy itself.
 
-**Say:** "Next time audit asks, you hand them this."
+**Say:** "Next time the audit team asks, you can hand them this."
 
 ## 7. Fitting the real landscape (8 min)
 
@@ -312,14 +311,13 @@ stop it, you'll have stopped it."
 
 - "Tenants would PR the platform team." Tenants never wait on the platform team to ship.
 - "This is mainly about standardization." Policy first.
-- "Kargo replaces Kyverno" or "replaces GitHub."
+- "Kargo replaces Kyverno" or "replaces GitHub." It all plays a part.
 - "Nothing can get around it." Show the gauntlet and name what's left.
-- "OSS Kargo can't shard" or "can't integrate with third parties."
 - Anything about requester ≠ approver, SaaS regions or secret sync until confirmed.
 
 ## Say plainly
 
-- Custom steps (the scans) are alpha and need a self-hosted agent.
+- Custom steps (the scans) are alpha and need a self-hosted agent and Enterprise license.
 - Rollback means promoting older Freight. It doesn't undo side effects such as a ServiceNow ticket or a DB migration.
 - Trivy stands in for Snyk; the check calls whatever scanner they use.
 
